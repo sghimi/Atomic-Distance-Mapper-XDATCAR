@@ -20,7 +20,7 @@ arr_2 = np.array(
 arr_3 = np.array(
     [float(s)*scale for s in xdatcar.readline().rstrip('\n').split()])
 
-v = arr_1
+v = arr_1[0]
 print("Box vectors sizes are ",arr_1,arr_2,arr_3)
 
 element_names = xdatcar.readline().rstrip('\n').split()
@@ -85,11 +85,10 @@ def get_key(val):
     return "key doesn't exist"
 
 # finds distances between two types of atoms
-def find_distance(list1, list2):
+def find_distance(list1, list2,min,max):
     key1 = get_key(list1)
     key2 = get_key(list2)
-    str = " "
-    cutoff = 0
+
     # calculating distance
     i = 1
     for x in list1:
@@ -102,30 +101,20 @@ def find_distance(list1, list2):
             c = x[2]-y[2]
             c = c*c
             d = math.sqrt(a+b+c)*(v)
-            print(key1, i, key2, j, " : ", d)
+            #print(key1, i, key2, j, " : ", d)
+            if(d <= max and d >= min ):
+                print(key1, i, key2, j, " : ", d)
             j += 1
         i += 1
 
-def find_all_distances():
+def find_all_distances(min,max):
     # iterate pairwise every 2 items
     res = list(combinations(element, 2))
     flat_list = [item for sublist in res for item in sublist]
     print(flat_list)
     for item1, item2 in zip(flat_list[::2], flat_list[1::2]):
-        find_distance(element[item1], element[item2])
-
-def PBCdist(coord1,coord2,UC):
-    dx = coord1[0] - coord2[0]
-    if (abs(dx) > UC[0]*0.5):
-       dx = UC[0] - dx
-    dy = coord1[1] - coord2[1]
-    if (abs(dy) > UC[1]*0.5):
-       dy = UC[1] - dy
-    dz = coord1[2] - coord2[2]
-    if (abs(dz) > UC[2]*0.5):
-       dz = UC[2] - dz
-    dist = np.sqrt(dx**2 + dy**2 + dz**2)
-    return dist
+        find_distance(element[item1], element[item2],min,max)
 
 
-
+#finds bonds with distance from 1-3
+find_all_distances(1,3)
