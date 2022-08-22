@@ -1,18 +1,16 @@
 import math
 import numpy as np
-from copy import deepcopy
 from itertools import combinations
-from scipy.spatial import distance
+import matplotlib.pyplot as plt
 
 
 file = open('XDATCAR', 'r')
 lines = file.readlines()
-
 xdatcar = open('XDATCAR', 'r')
 system = xdatcar.readline()
 scale = float(xdatcar.readline().rstrip('\n'))
 
-#import l - vectors
+# import l - Bounds
 arr_1 = np.array(
     [float(s)*scale for s in xdatcar.readline().rstrip('\n').split()])
 arr_2 = np.array(
@@ -21,22 +19,23 @@ arr_3 = np.array(
     [float(s)*scale for s in xdatcar.readline().rstrip('\n').split()])
 
 v = arr_1[0]
-print("Box vectors sizes are ",arr_1,arr_2,arr_3)
+bound = [arr_1[0], arr_2[1], arr_3[2]]
+print("Bounds: ", bound)
 
 element_names = xdatcar.readline().rstrip('\n').split()
 element_numbers = xdatcar.readline().rstrip('\n').split()
 list_of_elements = [[] for i in range(5)]
 times = []
 
+
 def convert(line):
     list = line.split()
     return list
 
-# Fills the lists
+
 def fill_lists(times, lines):
     count = 0
     lis = []
-
     for i in times:
         lis.append(int(i))
 
@@ -66,6 +65,7 @@ def fill_lists(times, lines):
             list_of_elements[t] = all_lines[x:y]
     return None
 
+
 count = 0
 for line in lines:
     # getting towards the 6th line
@@ -77,44 +77,67 @@ for line in lines:
 # Create dictionary from list
 element = dict(zip(element_names, list_of_elements))
 
-# Return key for any value in dict
+
 def get_key(val):
     for key, value in element.items():
         if val == value:
             return key
     return "key doesn't exist"
 
+
 # finds distances between two types of atoms
-def find_distance(list1, list2,min,max):
+def find_distance(list1, list2, min, max):
+
+    d_array = []
     key1 = get_key(list1)
     key2 = get_key(list2)
-
-    # calculating distance
+    # calculating distance w/ periodic boundry
     i = 1
     for x in list1:
         j = 1
         for y in list2:
             a = x[0]-y[0]
-            a = a*a
+            if(abs(a) > bound[0]*0.5):
+                a = bound[0] - a
+
             b = x[1]-y[1]
-            b = b*b
+            if(abs(b) > bound[1]*0.5):
+                b = bound[1] - b
+
             c = x[2]-y[2]
-            c = c*c
-            d = math.sqrt(a+b+c)*(v)
+            if(abs(c) > bound[2]*0.5):
+                c = bound[2] - c
+
+            d = math.sqrt(a**2+b**2+c**2)*(v)
             #print(key1, i, key2, j, " : ", d)
-            if(d <= max and d >= min ):
-                print(key1, i, key2, j, " : ", d)
+            if(d <= max and d >= min):
+                #text = (key1, i, key2, j, ":", d)
+                text = (d)
+                d_array.append(text)
             j += 1
         i += 1
+    return d_array
 
-def find_all_distances(min,max):
+
+def find_all_distances(min, max):
+    my_str = " "
+    pArray = []
+    text = []
+    itemList = []
     # iterate pairwise every 2 items
     res = list(combinations(element, 2))
     flat_list = [item for sublist in res for item in sublist]
-    print(flat_list)
     for item1, item2 in zip(flat_list[::2], flat_list[1::2]):
-        find_distance(element[item1], element[item2],min,max)
+        text.append(find_distance(element[item1], element[item2], min, max))
+        itemList.append(item1+item2)
+    atomic_bond = dict(zip(itemList, text))
+    return atomic_bond
 
 
-#finds bonds with distance from 1-3
-find_all_distances(1,3)
+# Generate histograms, prints values in the console.
+atomic_bonds = find_all_distances(0, 10) #from 0 to 10
+for key in atomic_bonds:
+    plt.hist(atomic_bonds[key])
+    plt.title(key)
+    plt.show()
+    print(key, " ", atomic_bonds[key])
