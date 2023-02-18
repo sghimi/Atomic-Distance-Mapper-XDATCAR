@@ -1,7 +1,7 @@
 
 # **Introduction:**
 
-This Python program imports XDATCAR files and calculates the distance between atoms in 3D space while accounting for periodic boundary conditions. It can plot histograms of the interatomic distances and save the results to a log file.
+This Python tool imports XDATCAR files and calculates the distance between atoms in 3D space while accounting for periodic boundary conditions. It can plot histograms of the interatomic distances and save the results to a log file.
 
 # **Installation:**
 
